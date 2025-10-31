@@ -13,10 +13,35 @@ public class PlayerCtrl : MonoBehaviour
     Animator anim;
     new Transform transform;
     Vector3 moveDir;
+    PlayerInput playerInput;
+    InputActionMap mainActionMap;
+    InputAction moveAction;
+    InputAction attackAction;
     void Start()
     {
         anim = GetComponent<Animator>();
         transform = GetComponent<Transform>();
+        playerInput = GetComponent<PlayerInput>();
+        mainActionMap = playerInput.actions.FindActionMap("PlayerActions");
+        moveAction = mainActionMap.FindAction("Move");
+        attackAction = mainActionMap.FindAction("Attack");
+
+        moveAction.performed += ContextMenu =>
+        {
+            Vector2 dir = ContextMenu.ReadValue<Vector2>();
+            moveDir = new Vector3(dir.x, 0, dir.y);
+            anim.SetFloat("Movement", dir.magnitude);
+        };
+        moveAction.canceled += ctx =>
+        {
+            moveDir = Vector3.zero;
+            anim.SetFloat("Movement", 0.0f);
+        };
+        attackAction.performed += ctx =>
+        {
+            Debug.Log("Attack by c# event");
+            anim.SetTrigger("Attack");
+        };
     }
 
     void Update()
